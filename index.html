@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fronters Transfer Portal</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            /* slate-50 */;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+        }
+        /* card exactly like Declined Leads */
+        .portal-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            padding: 2rem 2rem 2.5rem;
+            width: 100%;
+            max-width: 672px;
+            margin: 0 auto;
+        }
+        @media (max-width: 640px) {
+            .portal-card {
+                padding: 1.5rem 1.25rem 2rem;
+                border-radius: 1.25rem;
+            }
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        .form-group label .required {
+            color: #ef4444;
+            font-weight: 700;
+        }
+        .relative {
+            position: relative;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            font-size: 0.9375rem;
+            font-weight: 400;
+            color: #0f172a;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.75rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px #3b82f6;
+            /* exactly like Declined Leads focus ring */;
+        }
+        .form-control.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+        textarea.form-control {
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            min-height: 5.5rem;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        .input-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1rem;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+        .form-control:focus~.input-icon,
+        .form-control:focus+.input-icon {
+            color: #3b82f6;
+        }
+        .textarea-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 0.875rem;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            /* shrunk further */;
+            pointer-events: none;
+            transition: color 0.2s ease;
+        }
+        .form-control:focus~.textarea-icon,
+        .form-control:focus+.textarea-icon {
+            color: #3b82f6;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            background: #2563eb;
+            border: none;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .btn-submit:hover:not(:disabled) {
+            background: #1d4ed8;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-submit .spinner {
+            display: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .btn-submit.loading .spinner {
+            display: inline-block;
+        }
+        .btn-submit.loading .btn-label {
+            display: none;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .status-message {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        .status-message.show {
+            display: block;
+        }
+        .status-message.success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status-message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem 1.5rem;
+        }
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .portal-card {
+                padding: 1.5rem 1.25rem;
+            }
+            .form-control {
+                padding: 0.7rem 0.875rem 0.7rem 2.5rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header outside card -->
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800 mb-1">Fronters Transfer Portal</h1>
+            <p class="text-slate-600">Log transfer activity</p>
+        </div>
+
+        <!-- Card -->
+        <div class="portal-card">
+            <form id="transferForm" novalidate>
+
+                <!-- Row 1: Phone & Campaign -->
+                <div class="grid-2">
+                    <!-- Phone -->
+                    <div class="form-group">
+                        <label for="phone">Phone Number <span class="required">*</span></label>
+                        <div class="relative">
+                            <input type="tel" id="phone" name="phone" class="form-control"
+                            placeholder="1234567890" maxlength="10" inputmode="numeric" required>
+                            <i class="fas fa-phone input-icon"></i>
+                        </div>
+                    </div>
+                    <!-- Campaign -->
+                    <div class="form-group">
+                        <label for="campaign">Campaign <span class="required">*</span></label>
+                        <div class="relative">
+                            <select id="campaign" name="campaign" class="form-control" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="Home">Home</option>
+                                <option value="MVA">MVA</option>
+                                <option value="Auto">Auto</option>
+                                <option value="Medicare">Medicare</option>
+                                <option value="FE">FE</option>
+                                <option value="Solar">Solar</option>
+                                <option value="Pest">Pest</option>
+                            </select>
+                            <i class="fas fa-bullseye input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Agent & VICI ID -->
+                <div class="grid-2">
+                    <!-- Agent -->
+                    <div class="form-group">
+                        <label for="agent">Agent <span class="required">*</span></label>
+                        <div class="relative">
+                            <select id="agent" name="agent" class="form-control" required>
+                                <option value="" disabled selected>Loading agents…</option>
+                            </select>
+                            <i class="fas fa-user input-icon"></i>
+                        </div>
+                    </div>
+                    <!-- VICI ID -->
+                    <div class="form-group">
+                        <label for="viciId">VICI ID <span class="required">*</span></label>
+                        <div class="relative">
+                            <select id="viciId" name="viciId" class="form-control" required>
+                                <option value="" disabled selected>Select</option>
+                            </select>
+                            <i class="fas fa-id-card input-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Remarks (full width, optional) -->
+                <div class="form-group">
+                    <label for="comments">Remarks</label>
+                    <div class="relative">
+                        <textarea id="comments" name="comments" class="form-control" rows="3" placeholder=""></textarea>
+                        <i class="fas fa-comment textarea-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="btn-submit">
+                    <span class="btn-label"><i class="fas fa-paper-plane" style="margin-right:0.375rem;"></i>Submit Transfer</span>
+                    <span class="spinner"></span>
+                </button>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message"></div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── CONFIG ──────────────────────────────────────────────────────
+            const API_BASE =
+                "https://script.google.com/macros/s/AKfycbz27GV2-8uDfjX9NnLUK_SQhVfQ0gzBT5wGhR2C1X3P6sDdDoZlji8LPdQOD6qTCaO-ow/exec";
+
+            // ─── DOM REFS ───────────────────────────────────────────────────
+            const form = document.getElementById('transferForm');
+            const phone = document.getElementById('phone');
+            const campaign = document.getElementById('campaign');
+            const agent = document.getElementById('agent');
+            const viciId = document.getElementById('viciId');
+            const comments = document.getElementById('comments');
+            const submitBtn = document.getElementById('submitBtn');
+            const statusDiv = document.getElementById('statusMessage');
+
+            // ─── STATE ──────────────────────────────────────────────────────
+            let isSubmitting = false;
+
+            // ─── HELPERS ────────────────────────────────────────────────────
+
+            function showStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'status-message show ' + type;
+            }
+
+            function hideStatus() {
+                statusDiv.className = 'status-message';
+            }
+
+            function setFieldError(field) {
+                field.classList.add('error');
+            }
+
+            function clearFieldError(field) {
+                field.classList.remove('error');
+            }
+
+            function clearAllErrors() {
+                [phone, campaign, agent, viciId, comments].forEach(clearFieldError);
+            }
+
+            function resetForm() {
+                // Keep agent selected; clear other fields
+                const selectedAgent = agent.value;
+                phone.value = '';
+                campaign.value = '';
+                viciId.value = '';
+                comments.value = '';
+                clearAllErrors();
+                hideStatus();
+                setTimeout(() => phone.focus(), 100);
+                // Restore agent selection after reset
+                agent.value = selectedAgent;
+            }
+
+            // ─── POPULATE VICI DROPDOWN ────────────────────────────────────
+            function populateVici() {
+                const select = viciId;
+                select.innerHTML = '<option value="" disabled selected>Select</option>';
+                for (let i = 1001; i <= 1060; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = i;
+                    select.appendChild(opt);
+                }
+            }
+            populateVici();
+
+            // ─── FETCH AGENTS ──────────────────────────────────────────────
+            async function fetchAgents() {
+                try {
+                    const resp = await fetch(API_BASE + '?action=agents');
+                    const data = await resp.json();
+                    if (data.agents && Array.isArray(data.agents) && data.agents.length > 0) {
+                        const sorted = [...data.agents].sort((a, b) => a.localeCompare(b));
+                        agent.innerHTML = '<option value="" disabled selected>Select an agent</option>';
+                        sorted.forEach(name => {
+                            const opt = document.createElement('option');
+                            opt.value = name;
+                            opt.textContent = name;
+                            agent.appendChild(opt);
+                        });
+                    } else {
+                        agent.innerHTML = '<option value="" disabled selected>No agents available</option>';
+                    }
+                } catch (err) {
+                    console.error('Agent fetch error:', err);
+                    agent.innerHTML = '<option value="" disabled selected>Error loading</option>';
+                }
+            }
+
+            // ─── VALIDATION ──────────────────────────────────────────────────
+            function validateAll() {
+                let valid = true;
+                clearAllErrors();
+
+                const rawPhone = phone.value.replace(/\D/g, '');
+                if (rawPhone.length !== 10) {
+                    setFieldError(phone);
+                    valid = false;
+                }
+
+                if (!campaign.value) {
+                    setFieldError(campaign);
+                    valid = false;
+                }
+
+                if (!agent.value) {
+                    setFieldError(agent);
+                    valid = false;
+                }
+
+                const viciVal = parseInt(viciId.value, 10);
+                if (isNaN(viciVal) || viciVal < 1001 || viciVal > 1060) {
+                    setFieldError(viciId);
+                    valid = false;
+                }
+
+                // Comments are optional – no validation
+
+                return valid;
+            }
+
+            // ─── SUBMIT ─────────────────────────────────────────────────────
+            async function submitTransfer(payload) {
+                const resp = await fetch(API_BASE + '?action=submit', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                return resp.json();
+            }
+
+            // ─── FORM SUBMISSION HANDLER ──────────────────────────────────
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (isSubmitting) return;
+
+                hideStatus();
+                clearAllErrors();
+
+                if (!validateAll()) {
+                    showStatus('Please fill all required fields correctly.', 'error');
+                    const firstError = form.querySelector('.form-control.error');
+                    if (firstError) firstError.focus();
+                    return;
+                }
+
+                const payload = {
+                    phone: phone.value.trim().replace(/\D/g, ''),
+                    campaign: campaign.value,
+                    agent: agent.value.trim(),
+                    viciId: parseInt(viciId.value, 10),
+                    comments: comments.value.trim() || '' // optional
+                };
+
+                isSubmitting = true;
+                submitBtn.disabled = true;
+                submitBtn.classList.add('loading');
+
+                try {
+                    const result = await submitTransfer(payload);
+                    if (result.success) {
+                        showStatus(result.message || 'Transfer logged successfully.', 'success');
+                        // Reset only non-agent fields, keep agent selection
+                        const selectedAgent = agent.value;
+                        phone.value = '';
+                        campaign.value = '';
+                        viciId.value = '';
+                        comments.value = '';
+                        clearAllErrors();
+                        // Restore agent
+                        agent.value = selectedAgent;
+                        setTimeout(() => phone.focus(), 100);
+                    } else {
+                        showStatus(result.message || 'Submission failed.', 'error');
+                        if (result.field) {
+                            const fieldMap = { phone, campaign, agent, viciId, comments };
+                            const target = fieldMap[result.field];
+                            if (target) {
+                                setFieldError(target);
+                                target.focus();
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showStatus('Network error. Please try again.', 'error');
+                } finally {
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('loading');
+                }
+            });
+
+            // ─── PHONE: DIGITS ONLY ──────────────────────────────────────
+            phone.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+                clearFieldError(this);
+            });
+
+            // ─── INIT ──────────────────────────────────────────────────────
+            fetchAgents();
+            setTimeout(() => phone.focus(), 300);
+
+            // Retry agent load on dropdown focus if empty
+            agent.addEventListener('focus', function() {
+                if (this.options.length <= 1) {
+                    fetchAgents();
+                }
+            });
+
+            // Clear errors on input/change
+            [phone, campaign, agent, viciId, comments].forEach(el => {
+                el.addEventListener('input', function() { clearFieldError(this); });
+                el.addEventListener('change', function() { clearFieldError(this); });
+            });
+
+            // Keyboard shortcut: Ctrl+Enter to submit
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!isSubmitting) form.dispatchEvent(new Event('submit'));
+                }
+            });
+
+        })();
+    </script>
+</body>
+</html>
