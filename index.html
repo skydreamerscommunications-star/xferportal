@@ -126,7 +126,7 @@
         /* Comments field – reduced height, no icon padding */
         textarea.form-control.comments {
             padding: 0.75rem 1rem;
-            min-height: 3.5rem;
+            min-height: 3rem;
             /* ~2 lines */
             resize: vertical;
             line-height: 1.5;
@@ -598,7 +598,7 @@
                 try {
                     const result = await submitTransfer(payload);
                     if (result.success) {
-                        showStatus(result.message || 'Transfer logged successfully.', 'success');
+                        showStatus(result.message || 'Submitted Successfully.', 'success');
                         const selectedAgent = agent.value;
                         phone.value = '';
                         campaign.value = '';
