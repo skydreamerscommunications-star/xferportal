@@ -84,7 +84,6 @@
             display: block;
             font-size: 0.875rem;
             font-weight: 500;
-            /* lighter than before */
             color: var(--label-color);
             margin-bottom: 0.5rem;
             transition: color 0.2s ease;
@@ -127,7 +126,6 @@
         textarea.form-control.comments {
             padding: 0.75rem 1rem;
             min-height: 3rem;
-            /* ~2 lines */
             resize: vertical;
             line-height: 1.5;
         }
@@ -266,24 +264,24 @@
 
         /* ─── Header / Dark Toggle ──────────────────────────────────────── */
         .portal-header {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 1.5rem;
-    height: 48px;
-}
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+            height: 48px;
+        }
 
-.portal-header h1 {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    white-space: nowrap;
-}
+        .portal-header h1 {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
         .dark-toggle {
             background: transparent;
             border: none;
@@ -476,29 +474,22 @@
 
             function resetForm() {
                 const selectedAgent = agent.value;
+                const selectedCampaign = campaign.value;
+                const selectedVici = viciId.value;
+
                 phone.value = '';
-                campaign.value = '';
-                viciId.value = '';
                 comments.value = '';
+
                 clearAllErrors();
                 hideStatus();
-                setTimeout(() => phone.focus(), 100);
+
+                // Restore selections
                 agent.value = selectedAgent;
+                campaign.value = selectedCampaign;
+                viciId.value = selectedVici;
+
+                setTimeout(() => phone.focus(), 100);
             }
-
-            function saveSelections() {
-    localStorage.setItem('transferAgent', agent.value);
-    localStorage.setItem('transferCampaign', campaign.value);
-    localStorage.setItem('transferViciId', viciId.value);
-}
-
-function loadSelections() {
-    const savedCampaign = localStorage.getItem('transferCampaign');
-    const savedViciId = localStorage.getItem('transferViciId');
-
-    if (savedCampaign) campaign.value = savedCampaign;
-    if (savedViciId) viciId.value = savedViciId;
-}
 
             // ─── POPULATE VICI ──────────────────────────────────────────────
             function populateVici() {
@@ -527,10 +518,6 @@ function loadSelections() {
                             opt.textContent = name;
                             agent.appendChild(opt);
                         });
-                        const savedAgent = localStorage.getItem('transferAgent');
-if (savedAgent) {
-    agent.value = savedAgent;
-}
                     } else {
                         agent.innerHTML = '<option value="" disabled selected>No agents available</option>';
                     }
@@ -589,6 +576,8 @@ if (savedAgent) {
             // ─── FORM SUBMISSION ──────────────────────────────────────────
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+
+                // Prevent double submission
                 if (isSubmitting) return;
 
                 hideStatus();
@@ -615,27 +604,10 @@ if (savedAgent) {
 
                 try {
                     const result = await submitTransfer(payload);
-                   if (result.success) {
-                showStatus(result.message || 'Transfer logged successfully.', 'success');
-
-                // Preserve operational selections
-                const selectedAgent = agent.value;
-                const selectedCampaign = campaign.value;
-                const selectedViciId = viciId.value;
-
-               // Clear only transfer-specific fields
-               phone.value = '';
-               comments.value = '';
-
-             clearAllErrors();
-
-              // Restore selections
-              agent.value = selectedAgent;
-              campaign.value = selectedCampaign;
-              viciId.value = selectedViciId;
-
-             setTimeout(() => phone.focus(), 100);
-             } else {
+                    if (result.success) {
+                        showStatus(result.message || 'Transfer logged successfully.', 'success');
+                        resetForm(); // keeps agent, campaign, vici; clears phone & comments
+                    } else {
                         showStatus(result.message || 'Submission failed.', 'error');
                         if (result.field) {
                             const fieldMap = { phone, campaign, agent, viciId, comments };
@@ -656,10 +628,6 @@ if (savedAgent) {
                 }
             });
 
-            agent.addEventListener('change', saveSelections);
-            campaign.addEventListener('change', saveSelections);
-            viciId.addEventListener('change', saveSelections);
-
             // ─── PHONE: DIGITS ONLY ──────────────────────────────────────
             phone.addEventListener('input', function() {
                 this.value = this.value.replace(/\D/g, '');
@@ -671,7 +639,6 @@ if (savedAgent) {
 
             // ─── INIT ──────────────────────────────────────────────────────
             loadDarkMode();
-            loadSelections();
             fetchAgents();
             setTimeout(() => phone.focus(), 300);
 
